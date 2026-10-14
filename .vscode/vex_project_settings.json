@@ -1,0 +1,18 @@
+{
+	"project": {
+		"name": "kolTest23",
+		"slot": 1,
+		"description": "",
+		"platform": "V5",
+		"creationDate": "Wed, 14 Oct 2026 08:10:36 GMT",
+		"language": "cpp",
+		"sdkVersion": "V5_20240802_15_00_00",
+		"cpp": {
+			"includePath": []
+		}
+	},
+	"extension": {
+		"version": "0.8.2026020401",
+		"json": 1
+	}
+}
