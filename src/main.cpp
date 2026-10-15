@@ -94,6 +94,17 @@ motor_group RightDrive = motor_group(TopRight, BottomRight);
 
 //CONSTS
 
+int MINI_GOAL_CM=3.25;
+int MIDDLE_GOAL_CM=3.25;
+int LARGE_GOAL_CM=3.25;
+
+int PIPE_CM=6.5
+int TOLERANCE=1.0
+int CUP_CM=6.48
+
+int current_goal_cm = 0
+int arm_height_press_count = 0
+
 
 motor_group Arm = motor_group(
     ArmMotor1,
@@ -104,13 +115,19 @@ motor_group Arm = motor_group(
 
 int main() {
     // Initialize robot
-  //pin+cup 25cm
+    //pin+cup 25cm
     //test. 90 derece == 33cm
     int ayar = 0; 
     // Set braking modes
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
+
+
+
+
+
+
 
     while (true) {
 
@@ -147,11 +164,7 @@ int main() {
         // ARM CONTROLS
         // =========================
 
-        if (Controller1.ButtonUp.pressing()) {
-            ayar =+1;
-            ArmMotor1.spinFor(forward, 44, degrees);
-            
-        }
+        
         else if (Controller1.ButtonDown.pressing()) {
           if (ayar > 0)
               ayar =-1;
