@@ -98,12 +98,12 @@ int MINI_GOAL_CM=3.25;
 int MIDDLE_GOAL_CM=3.25;
 int LARGE_GOAL_CM=3.25;
 
-int PIPE_CM=6.5
-int TOLERANCE=1.0
-int CUP_CM=6.48
+int PIPE_CM=6.5;
+int TOLERANCE=1.0;
+int CUP_CM=6.48;
 
-int current_goal_cm = 0
-int arm_height_press_count = 0
+int current_goal_cm = 0;
+int arm_height_press_count = 0;
 
 
 motor_group Arm = motor_group(
@@ -164,20 +164,9 @@ int main() {
         // ARM CONTROLS
         // =========================
 
-        
-        else if (Controller1.ButtonDown.pressing()) {
-          if (ayar > 0)
-              ayar =-1;
-              ArmMotor1.spinFor(reverse, 44, degrees);
-        else if (Controller1.ButtonA.pressed() {
 
-          Arm.spinFor(forward, 82, degrees)
         
-        }
-        else {
-            // Hold arm position
-            Arm.stop(hold);
-        }
+        
 
         // Small delay
         wait(20, msec);
