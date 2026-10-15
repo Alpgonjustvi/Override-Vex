@@ -129,7 +129,7 @@ void setArmToNextStep()
   {
     addArmHeight(current_goal_cm + TOLERANCE + PIN_CM/2);
   }
-  addArmHeight(CUP_CM/2);
+  addArmHeight(CUP_CM);
 }
 
 void setArmToPreviousStep()
@@ -140,7 +140,7 @@ void setArmToPreviousStep()
   {
     addArmHeight(-current_goal_cm - TOLERANCE - PIN_CM/2);
   }
-  addArmHeight(-CUP_CM/2);
+  addArmHeight(-CUP_CM);
 }
 
 void resetArmHeight()
