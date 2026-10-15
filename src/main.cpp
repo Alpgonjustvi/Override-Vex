@@ -15,7 +15,7 @@ float MINI_GOAL_CM = 3.25;
 float MIDDLE_GOAL_CM = 5.77;
 float LARGE_GOAL_CM = 8.77;
 
-float PIPE_CM = 6.5;
+float PIN_CM = 6.5;
 float TOLERANCE = 1.0;
 float CUP_CM = 6.48;
 
@@ -117,7 +117,7 @@ void setArmToNextStep()
   if (arm_height_press_count == 1)
   {
     // On first press, set the arm height to the current goal plus tolerance
-    setArmHeight(current_goal_cm + TOLERANCE);
+    setArmHeight(current_goal_cm + TOLERANCE + PIN_CM/2);
     return;
   }
   setArmHeight(current_goal_cm);
