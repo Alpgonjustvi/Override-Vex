@@ -110,17 +110,37 @@ void setArmHeight(float cm)
   Arm.spinFor(vex::directionType::fwd, target_degrees, vex::rotationUnits::deg, false);
 }
 
+float getArmDegrees()
+{
+  return Arm.position(vex::rotationUnits::deg);
+}
+
+void addArmHeight(float cm)
+{
+  float target_degrees = cm * ARM_DEGREE_TO_CM + getArmDegrees();
+  Arm.spinFor(vex::directionType::fwd, target_degrees, vex::rotationUnits::deg, false);
+}
+
 void setArmToNextStep()
 {
   arm_height_press_count++;
 
   if (arm_height_press_count == 1)
   {
-    // On first press, set the arm height to the current goal plus tolerance
-    setArmHeight(current_goal_cm + TOLERANCE + PIN_CM/2);
-    return;
+    addArmHeight(current_goal_cm + TOLERANCE + PIN_CM/2);
   }
-  setArmHeight(current_goal_cm);
+  addArmHeight(CUP_CM/2);
+}
+
+void setArmToPreviousStep()
+{
+  arm_height_press_count--;
+
+  if (arm_height_press_count == 0)
+  {
+    addArmHeight(-current_goal_cm - TOLERANCE - PIN_CM/2);
+  }
+  addArmHeight(-CUP_CM/2);
 }
 
 void resetArmHeight()
@@ -146,6 +166,7 @@ void configureBindings()
   // ARM CONTROLS
   // =========================
   Controller1.ButtonR1.pressed(setArmToNextStep);
+  Controller1.ButtonR2.pressed(setArmToPreviousStep);
   Controller1.ButtonL1.pressed(resetArmHeight);
 }
 
