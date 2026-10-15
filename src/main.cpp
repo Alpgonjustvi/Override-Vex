@@ -73,7 +73,7 @@ using namespace vex;
 // Controller
 controller Controller1 = controller(primary);
 
-// Arm motors
+// Arm motors AYARLA!!!
 motor ArmMotor1 = motor(PORT11, ratio18_1, true);
 motor ArmMotor2 = motor(PORT12, ratio18_1, false);
 motor ArmMotor3 = motor(PORT13, ratio18_1, false);
@@ -95,14 +95,17 @@ motor_group RightDrive = motor_group(TopRight, BottomRight);
 //CONSTS
 
 int MINI_GOAL_CM=3.25;
-int MIDDLE_GOAL_CM=3.25;
-int LARGE_GOAL_CM=3.25;
+int MIDDLE_GOAL_CM=5.77;
+int LARGE_GOAL_CM=8.77;
 
-int PIPE_CM=6.5;
+int PIN_CM=6.5;
 int TOLERANCE=1.0;
 int CUP_CM=6.48;
 
-int current_goal_cm = 0;
+float DEGREE_TO_CM= 90.0/25.0;
+
+float current_arm_height = 0;
+float current_goal_cm = 0;
 int arm_height_press_count = 0;
 
 
@@ -113,11 +116,66 @@ motor_group Arm = motor_group(
     ArmMotor4
 );
 
+//func 
+float getDegrees() {
+  return Arm.position(rotationUnits::deg);
+}
+void alignToGoal(float cm) {
+  float target_degrees = cm * DEGREE_TO_CM;
+  float catchDegrees = getDegrees();
+  if (catchDegrees < target_degrees) {
+    Arm.spinFor(vex::directionType::fwd, target_degrees - catchDegrees, vex::rotationUnits::deg, false);
+  } else if (catchDegrees > target_degrees) {
+    Arm.spinFor(vex::directionType::rev, catchDegrees - target_degrees, vex::rotationUnits::deg, false);
+  } else if (catchDegrees == target_degrees) {
+    return;
+  }
+
+}
+void increaseArmStep() {
+  //UYARI, KAC STEP ARTABİLECEĞİ BELLİ DEĞİL, OGRENDİKTEN SONRA LİMİTLEMEK LAZIM.
+  arm_height_press_count++;
+  Arm.spinFor(vex::directionType::fwd, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
+}
+void decreaseArmStep() {
+  if (arm_height_press_count > 0) {
+    arm_height_press_count--;
+    Arm.spinFor(vex::directionType::rev, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
+} else {
+    return;
+  }
+  
+void resetArm() {
+  float catchDegrees = getDegrees();
+  Arm.spinFor(vex::directionType::rev, catchDegrees, vex::rotationUnits::deg, false);
+  arm_height_press_count = 0;
+}
+
+void configureBindings() {
+  Controller1.ButtonX.pressed(
+[]() {
+    alignToGoal(MINI_GOAL_CM);
+  });
+  );
+  Controller1.ButtonA.pressed(
+[]() {
+    alignToGoal(MIDDLE_GOAL_CM);
+  });
+  );
+  Controller1.ButtonB.pressed(
+[]() {
+    alignToGoal(LARGE_GOAL_CM);
+  });
+  );
+  Controller1.ButtonL2.pressed(decreaseArmStep);
+  Controller1.ButtonL1.pressed(increaseArmStep);
+  Controller1.ButtonR1.pressed(resetArm);
+}
+
 int main() {
     // Initialize robot
     //pin+cup 25cm
-    //test. 90 derece == 33cm
-    int ayar = 0; 
+    //test. 90 derece == 33cm (-8 cm)
     // Set braking modes
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
