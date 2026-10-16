@@ -26,9 +26,6 @@ brain Brain;
 // END V5 MACROS
 
 
-// Robot configuration code.
-controller Controller1 = controller(primary);
-
 
 // generating and setting random seed
 void initializeRandomSeed(){
@@ -144,7 +141,7 @@ void decreaseArmStep() {
 } else {
     return;
   }
-  
+}
 void resetArm() {
   float catchDegrees = getDegrees();
   Arm.spinFor(vex::directionType::rev, catchDegrees, vex::rotationUnits::deg, false);
@@ -156,17 +153,14 @@ void configureBindings() {
 []() {
     alignToGoal(MINI_GOAL_CM);
   });
-  );
   Controller1.ButtonA.pressed(
 []() {
     alignToGoal(MIDDLE_GOAL_CM);
   });
-  );
   Controller1.ButtonB.pressed(
 []() {
     alignToGoal(LARGE_GOAL_CM);
   });
-  );
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
