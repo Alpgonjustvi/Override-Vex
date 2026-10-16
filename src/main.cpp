@@ -91,9 +91,9 @@ motor_group RightDrive = motor_group(TopRight, BottomRight);
 
 //CONSTS
 
-int MINI_GOAL_CM=3.25;
-int MIDDLE_GOAL_CM=5.77;
-int LARGE_GOAL_CM=8.77;
+int MINI_GOAL_CM=8.25;
+int MIDDLE_GOAL_CM=1.46;
+int LARGE_GOAL_CM=2.22;
 
 int PIN_CM=6.5;
 int TOLERANCE=1.0;
