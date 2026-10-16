@@ -120,6 +120,10 @@ float getDegrees() {
 void alignToGoal(float cm) {
   float target_degrees = cm * DEGREE_TO_CM;
   float catchDegrees = getDegrees();
+  float error = target_degrees - catchDegrees;
+    Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, false);
+
+  /*
   if (catchDegrees < target_degrees) {
     Arm.spinFor(vex::directionType::fwd, target_degrees - catchDegrees, vex::rotationUnits::deg, false);
   } else if (catchDegrees > target_degrees) {
@@ -127,7 +131,7 @@ void alignToGoal(float cm) {
   } else if (catchDegrees == target_degrees) {
     return;
   }
-
+    daha gereksiz hali*/
 }
 void increaseArmStep() {
   //UYARI, KAC STEP ARTABİLECEĞİ BELLİ DEĞİL, OGRENDİKTEN SONRA LİMİTLEMEK LAZIM.
@@ -136,7 +140,7 @@ void increaseArmStep() {
 }
 void decreaseArmStep() {
   if (arm_height_press_count > 0) {
-    arm_height_press_count--;
+    arm_height_press_count--; 
     Arm.spinFor(vex::directionType::rev, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
 } else {
     return;
