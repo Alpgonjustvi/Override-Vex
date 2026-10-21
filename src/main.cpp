@@ -72,9 +72,7 @@ controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
 motor ArmMotor1 = motor(PORT12, ratio36_1, true);
-motor ArmMotor2 = motor(PORT13, ratio18_1, true);
-motor ArmMotor3 = motor(PORT14, ratio36_1, false);
-motor ArmMotor4 = motor(PORT11, ratio18_1, false);
+motor ArmMotor2 = motor(PORT14, ratio36_1, false);
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -97,6 +95,7 @@ float LARGE_GOAL_CM=22.27;
 
 float PIN_CM=6.5;
 float TOLERANCE= 1.0;
+float ARMHEIGHTTOLERANCE = -8.0;
 float CUP_CM=6.48;
 
 float DEGREE_TO_CM= 90.0/25.0;
@@ -108,9 +107,7 @@ int arm_height_press_count = 0;
 
 motor_group Arm = motor_group(
     ArmMotor1,
-    ArmMotor2,
-    ArmMotor3,
-    ArmMotor4
+    ArmMotor2
 );
 
 //func 
@@ -118,7 +115,7 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE;
+  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE;
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
     Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
