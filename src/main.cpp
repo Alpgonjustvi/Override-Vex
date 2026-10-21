@@ -71,10 +71,10 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
-motor ArmMotor1 = motor(PORT11, ratio18_1, true);
-motor ArmMotor2 = motor(PORT12, ratio18_1, false);
-motor ArmMotor3 = motor(PORT13, ratio18_1, false);
-motor ArmMotor4 = motor(PORT14, ratio18_1, true);
+motor ArmMotor1 = motor(PORT12, ratio36_1, true);
+motor ArmMotor2 = motor(PORT13, ratio18_1, true);
+motor ArmMotor3 = motor(PORT14, ratio36_1, false);
+motor ArmMotor4 = motor(PORT11, ratio18_1, false);
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -91,13 +91,13 @@ motor_group RightDrive = motor_group(TopRight, BottomRight);
 
 //CONSTS
 
-int MINI_GOAL_CM=8.25;
-int MIDDLE_GOAL_CM=1.46;
-int LARGE_GOAL_CM=2.22;
+float MINI_GOAL_CM=8.25;
+float MIDDLE_GOAL_CM=14.65;
+float LARGE_GOAL_CM=22.27;
 
-int PIN_CM=6.5;
-int TOLERANCE=1.0;
-int CUP_CM=6.48;
+float PIN_CM=6.5;
+float TOLERANCE= 1.0;
+float CUP_CM=6.48;
 
 float DEGREE_TO_CM= 90.0/25.0;
 
@@ -118,10 +118,10 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  float target_degrees = cm * DEGREE_TO_CM;
+  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE;
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
-    Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, false);
+    Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
 
   /*
   if (catchDegrees < target_degrees) {
@@ -178,11 +178,9 @@ int main() {
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
-
-
-
-
-
+    configureBindings();
+    
+    
 
 
     while (true) {
