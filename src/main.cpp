@@ -86,6 +86,8 @@ motor_group LeftDrive = motor_group(TopLeft, BottomLeft);
 motor_group RightDrive = motor_group(TopRight, BottomRight);
 
 
+// Pneumatic
+digital_out Claw = digital_out(Brain.ThreeWirePort.A);
 
 //CONSTS
 
@@ -103,6 +105,8 @@ float DEGREE_TO_CM= 120.0/25.0;
 float current_arm_height = 0;
 float current_goal_cm = 0;
 int arm_height_press_count = 0;
+
+bool CLAWISEXTENDED = false;
 
 bool ISSLOWMODE = false;
 
@@ -149,6 +153,10 @@ void resetArm() {
   Arm.spinFor(vex::directionType::rev, catchDegrees, vex::rotationUnits::deg, false);
   arm_height_press_count = 0;
 }
+void toggleClaw() {
+  ISCLAWEXTENDED = !ISCLAWEXTENDED
+  Claw.set(ISCLAWEXTENDED)
+}
 void toggleSlowMode() {
     ISSLOWMODE = !ISSLOWMODE;
 }
@@ -174,6 +182,7 @@ void configureBindings() {
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
+  Controller1.ButtonR2.pressed(toggleClaw);
 }
 
 int main() {
@@ -184,6 +193,7 @@ int main() {
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
+    Claw.set(false);
     configureBindings();
     
     
