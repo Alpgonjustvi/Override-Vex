@@ -103,8 +103,8 @@ float CUP_CM=6.48;
 float DEGREE_TO_CM= 120.0/25.0;
 
 float current_arm_height = 0;
-float current_goal_cm = 0;
 int arm_height_press_count = 0;
+float currentAlignedGoalcm = 0;
 
 bool CLAWISEXTENDED = false;
 
@@ -120,11 +120,13 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE;
+  currentAlignedGoalcm = cm
+  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE - currentAlignedGoalcm + (arm_height_press_count * CUP_CM *DEGREE_TO_CM);
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
-    Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
-
+  Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
+  
+    
   /*
   if (catchDegrees < target_degrees) {
     Arm.spinFor(vex::directionType::fwd, target_degrees - catchDegrees, vex::rotationUnits::deg, false);
@@ -194,6 +196,8 @@ int main() {
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
     Claw.set(false);
+    currentAlignedGoalcm = 0;
+    isSlowMode = false;
     configureBindings();
     
     
@@ -228,8 +232,8 @@ int main() {
 
         // Apply slow mode scale (40% speed)
         if (isSlowMode) {
-            leftSpeed *= 0.4;
-            rightSpeed *= 0.4;
+            leftSpeed *= 0.28;
+            rightSpeed *= 0.28;
         }
 
         // Move drivetrain
