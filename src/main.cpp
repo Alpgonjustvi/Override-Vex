@@ -235,8 +235,8 @@ int main() {
 
 
         // Move drivetrain
-        LeftDrive.spin(vex::forward, leftSpeed, percent);
-        RightDrive.spin(vex::forward, rightSpeed, percent);
+        LeftDrive.spin(vex::forward, leftSpeed*arcade_supplier, percent);
+        RightDrive.spin(vex::forward, rightSpeed*arcade_supplier, percent);
 
         
         
