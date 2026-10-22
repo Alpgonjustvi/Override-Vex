@@ -98,17 +98,18 @@ float CUP_CM = 6.48;
 float MINI_GOAL_CM=8.25;
 float MIDDLE_GOAL_CM=14.65;
 float LARGE_GOAL_CM=22.27;
-
+float ARCADE_SLOW_SUPPLIER = 0.28;
 float MINARMREALHEIGHT = 8.0;
 
 float DEGREE_TO_CM= 120.0/25.0;
+
+float arcade_supplier = 1.0;
 
 float current_arm_height = 0;
 float current_goal_cm = 0;
 int arm_height_press_count = 0;
 
 bool ISCLAWEXTENDED = false;
-
 bool isSlowMode = false;
 
 //TOLERANCE - h + G_current + pipe/2 + [ cup + (armstep-1) ]
@@ -166,6 +167,8 @@ void toggleClaw() {
 }
 void toggleSlowMode() {
     isSlowMode = !isSlowMode;
+
+    arcade_supplier = isSlowMode ? ARCADE_SLOW_SUPPLIER : 1;
 }
 
 void configureBindings() {
@@ -181,11 +184,8 @@ void configureBindings() {
 []() {
     current_goal_cm = LARGE_GOAL_CM;
   });
-  Controller1.ButtonY.pressed(
-    []() {
-      toggleSlowMode();
-    }
-  );
+
+  Controller1.ButtonY.pressed(toggleSlowMode);
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
@@ -233,11 +233,6 @@ int main() {
         if (rightSpeed > 100) rightSpeed = 100;
         if (rightSpeed < -100) rightSpeed = -100;
 
-        // Apply slow mode scale (40% speed)
-        if (isSlowMode) {
-            leftSpeed *= 0.4;
-            rightSpeed *= 0.4;
-        }
 
         // Move drivetrain
         LeftDrive.spin(vex::forward, leftSpeed, percent);
