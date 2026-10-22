@@ -10,16 +10,6 @@
 
 using namespace vex;
 
-// CONSTANTS
-float MINI_GOAL_CM = 3.25;
-float MIDDLE_GOAL_CM = 5.77;
-float LARGE_GOAL_CM = 8.77;
-
-float PIN_CM = 6.5;
-float TOLERANCE = 1.0;
-float CUP_CM = 6.48;
-
-float ARM_DEGREE_TO_CM = 90.0 / 25.0;
 
 // Variables
 float current_goal_cm = 0;
@@ -103,14 +93,20 @@ digital_out Claw = digital_out(Brain.ThreeWirePort.A);
 
 //CONSTS
 
+float MINI_GOAL_CM = 3.25;
+float MIDDLE_GOAL_CM = 5.77;
+float LARGE_GOAL_CM = 8.77;
+
+float PIN_CM = 6.5;
+float TOLERANCE = 1.0;
+float CUP_CM = 6.48;
+
+
 float MINI_GOAL_CM=8.25;
 float MIDDLE_GOAL_CM=14.65;
 float LARGE_GOAL_CM=22.27;
 
-float PIN_CM=6.5;
-float TOLERANCE= 1.0;
-float ARMHEIGHTTOLERANCE = -8.0;
-float CUP_CM=6.48;
+float MINARMREALHEIGHT = 8.0;
 
 float DEGREE_TO_CM= 120.0/25.0;
 
@@ -134,7 +130,7 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal() {
-  float target_degrees = TOLERANCE - ARMHEIGHTTOLERANCE + current_goal_cm + PIN_CM/2 + (CUP_CM*(arm_height_press_count-1));
+  float target_degrees = TOLERANCE - MINARMREALHEIGHT + current_goal_cm + (PIN_CM / 2) + (CUP_CM * (arm_height_press_count - 0));
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
     Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
