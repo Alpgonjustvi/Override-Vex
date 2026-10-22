@@ -98,7 +98,7 @@ float TOLERANCE= 1.0;
 float ARMHEIGHTTOLERANCE = -8.0;
 float CUP_CM=6.48;
 
-float DEGREE_TO_CM= 90.0/25.0;
+float DEGREE_TO_CM= 120.0/25.0;
 
 float current_arm_height = 0;
 float current_goal_cm = 0;
