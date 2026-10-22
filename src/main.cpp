@@ -71,15 +71,8 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
-<<<<<<< HEAD
-motor ArmMotor1 = motor(PORT12, ratio36_1, true);
-motor ArmMotor2 = motor(PORT13, ratio18_1, true);
-motor ArmMotor3 = motor(PORT14, ratio36_1, false);
-motor ArmMotor4 = motor(PORT11, ratio18_1, false);
-=======
 motor ArmMotor1 = motor(PORT12, ratio36_1, true);
 motor ArmMotor2 = motor(PORT14, ratio36_1, false);
->>>>>>> b6e70915731165f41e86b707464bac7b7b32b74e
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -111,6 +104,7 @@ float current_arm_height = 0;
 float current_goal_cm = 0;
 int arm_height_press_count = 0;
 
+bool ISSLOWMODE = false;
 
 motor_group Arm = motor_group(
     ArmMotor1,
@@ -155,6 +149,9 @@ void resetArm() {
   Arm.spinFor(vex::directionType::rev, catchDegrees, vex::rotationUnits::deg, false);
   arm_height_press_count = 0;
 }
+void toggleSlowMode() {
+    ISSLOWMODE = !ISSLOWMODE;
+}
 
 void configureBindings() {
   Controller1.ButtonB.pressed(
@@ -169,6 +166,11 @@ void configureBindings() {
 []() {
     alignToGoal(LARGE_GOAL_CM);
   });
+  Controller1.ButtonY.pressed(
+    []() {
+      toggleSlowMode()
+    }
+  )
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
@@ -214,14 +216,15 @@ int main() {
         if (rightSpeed > 100) rightSpeed = 100;
         if (rightSpeed < -100) rightSpeed = -100;
 
+        // Apply slow mode scale (40% speed)
+        if (isSlowMode) {
+            leftSpeed *= 0.4;
+            rightSpeed *= 0.4;
+        }
+
         // Move drivetrain
         LeftDrive.spin(vex::forward, leftSpeed, percent);
         RightDrive.spin(vex::forward, rightSpeed, percent);
-
-        // =========================
-        // ARM CONTROLS
-        // =========================
-
 
         
         
