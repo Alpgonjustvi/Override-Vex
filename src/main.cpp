@@ -108,7 +108,7 @@ float currentAlignedGoalcm = 0;
 
 bool CLAWISEXTENDED = false;
 
-bool ISSLOWMODE = false;
+bool isSlowMode = false;
 
 motor_group Arm = motor_group(
     ArmMotor1,
@@ -120,7 +120,7 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  currentAlignedGoalcm = cm
+  currentAlignedGoalcm = cm;
   float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE - currentAlignedGoalcm + (arm_height_press_count * CUP_CM *DEGREE_TO_CM);
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
@@ -156,11 +156,11 @@ void resetArm() {
   arm_height_press_count = 0;
 }
 void toggleClaw() {
-  ISCLAWEXTENDED = !ISCLAWEXTENDED
-  Claw.set(ISCLAWEXTENDED)
+  CLAWISEXTENDED = !CLAWISEXTENDED;
+  Claw.set(CLAWISEXTENDED);
 }
 void toggleSlowMode() {
-    ISSLOWMODE = !ISSLOWMODE;
+    isSlowMode = !isSlowMode;
 }
 
 void configureBindings() {
@@ -178,9 +178,9 @@ void configureBindings() {
   });
   Controller1.ButtonY.pressed(
     []() {
-      toggleSlowMode()
+      toggleSlowMode();
     }
-  )
+  );
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
