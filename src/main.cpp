@@ -11,9 +11,6 @@
 using namespace vex;
 
 
-// Variables
-float current_goal_cm = 0;
-int arm_height_press_count = 0;
 
 // Brain should be defined by default
 brain Brain;
@@ -93,10 +90,6 @@ digital_out Claw = digital_out(Brain.ThreeWirePort.A);
 
 //CONSTS
 
-float MINI_GOAL_CM = 3.25;
-float MIDDLE_GOAL_CM = 5.77;
-float LARGE_GOAL_CM = 8.77;
-
 float PIN_CM = 6.5;
 float TOLERANCE = 1.0;
 float CUP_CM = 6.48;
@@ -114,9 +107,9 @@ float current_arm_height = 0;
 float current_goal_cm = 0;
 int arm_height_press_count = 0;
 
-bool CLAWISEXTENDED = false;
+bool ISCLAWEXTENDED = false;
 
-bool ISSLOWMODE = false;
+bool isSlowMode = false;
 
 //TOLERANCE - h + G_current + pipe/2 + [ cup + (armstep-1) ]
 
@@ -150,13 +143,13 @@ void alignToGoal() {
 void increaseArmStep() {
   //UYARI, KAC STEP ARTABİLECEĞİ BELLİ DEĞİL, OGRENDİKTEN SONRA LİMİTLEMEK LAZIM.
   arm_height_press_count++;
-  alignToGoal()
+  alignToGoal();
   //Arm.spinFor(vex::directionType::fwd, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
 }
 void decreaseArmStep() {
   if (arm_height_press_count > 0) {
     arm_height_press_count--; 
-    alignToGoal()
+    alignToGoal();
     //Arm.spinFor(vex::directionType::rev, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
 } else {
     return;
@@ -168,31 +161,31 @@ void resetArm() {
   arm_height_press_count = 0;
 }
 void toggleClaw() {
-  ISCLAWEXTENDED = !ISCLAWEXTENDED
-  Claw.set(ISCLAWEXTENDED)
+  ISCLAWEXTENDED = !ISCLAWEXTENDED;
+  Claw.set(ISCLAWEXTENDED);
 }
 void toggleSlowMode() {
-    ISSLOWMODE = !ISSLOWMODE;
+    isSlowMode = !isSlowMode;
 }
 
 void configureBindings() {
   Controller1.ButtonB.pressed(
 []() {
-    current_goal_cm = MINI_GOAL_CM
+    current_goal_cm = MINI_GOAL_CM;
   });
   Controller1.ButtonA.pressed(
 []() {
-    current_goal_cm = MIDDLE_GOAL_CM
+    current_goal_cm = MIDDLE_GOAL_CM;
   });
   Controller1.ButtonX.pressed(
 []() {
-    current_goal_cm = LARGE_GOAL_CM
+    current_goal_cm = LARGE_GOAL_CM;
   });
   Controller1.ButtonY.pressed(
     []() {
-      toggleSlowMode()
+      toggleSlowMode();
     }
-  )
+  );
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
