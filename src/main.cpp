@@ -71,8 +71,15 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
+<<<<<<< HEAD
+motor ArmMotor1 = motor(PORT12, ratio36_1, true);
+motor ArmMotor2 = motor(PORT13, ratio18_1, true);
+motor ArmMotor3 = motor(PORT14, ratio36_1, false);
+motor ArmMotor4 = motor(PORT11, ratio18_1, false);
+=======
 motor ArmMotor1 = motor(PORT12, ratio36_1, true);
 motor ArmMotor2 = motor(PORT14, ratio36_1, false);
+>>>>>>> b6e70915731165f41e86b707464bac7b7b32b74e
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -150,7 +157,7 @@ void resetArm() {
 }
 
 void configureBindings() {
-  Controller1.ButtonX.pressed(
+  Controller1.ButtonB.pressed(
 []() {
     alignToGoal(MINI_GOAL_CM);
   });
@@ -158,7 +165,7 @@ void configureBindings() {
 []() {
     alignToGoal(MIDDLE_GOAL_CM);
   });
-  Controller1.ButtonB.pressed(
+  Controller1.ButtonX.pressed(
 []() {
     alignToGoal(LARGE_GOAL_CM);
   });
