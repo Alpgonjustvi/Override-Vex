@@ -132,11 +132,12 @@ void alignToGoal()
   float target_degrees = target_cm * DEG_PER_CM;
 
   // Limitle
+  /*
   if (target_degrees < 0)
     target_degrees = 0;
   if (target_degrees > MAX_ARM_DEG)
     target_degrees = MAX_ARM_DEG;
-
+*/
   Controller1.Screen.clearScreen();
   Controller1.Screen.print("Target: %.2f cm, %.2f deg", target_cm + MINARMREALHEIGHT, target_degrees);
 
