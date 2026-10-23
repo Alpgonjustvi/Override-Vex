@@ -173,11 +173,7 @@ void configureBindings() {
 []() {
     alignToGoal(LARGE_GOAL_CM);
   });
-  Controller1.ButtonY.pressed(
-    []() {
-      toggleSlowMode();
-    }
-  );
+  Controller1.ButtonY.pressed(toggleSlowMode);
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
   Controller1.ButtonR1.pressed(resetArm);
