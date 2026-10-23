@@ -119,7 +119,8 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE + (arm_height_press_count * CUP_CM * DEGREE_TO_CM);
+  float target_cm = DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE + (PIN_CM / 2) + (arm_height_press_count * CUP_CM);
+  float target_degrees = target_cm * DEGREE_TO_CM
   Arm.spinToPosition(target_degrees, vex::rotationUnits::deg, false);
   
     
