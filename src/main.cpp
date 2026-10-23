@@ -99,7 +99,7 @@ const float LARGE_GOAL_CM = 22.27;
 const float ARCADE_SLOW_SUPPLIER = 0.28;
 const float MINARMREALHEIGHT = 8.0;
 
-const float DEG_PER_CM = 120.0 / 25.0;
+const float DEG_PER_CM = 90.0 / 16.0;
 
 const int MAX_ARM_STEP = 6;
 const float MAX_ARM_DEG = 600.0;
