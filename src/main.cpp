@@ -46,7 +46,6 @@ void vexcodeInit() {
 
   //Initializing random seed.
   initializeRandomSeed(); 
-  isSlowMode = false;
 }
 
 
@@ -105,7 +104,6 @@ float DEGREE_TO_CM= 120.0/25.0;
 
 float current_arm_height = 0;
 int arm_height_press_count = 0;
-float currentAlignedGoalcm = 0;
 
 bool CLAWISEXTENDED = false;
 
@@ -121,11 +119,8 @@ float getDegrees() {
   return Arm.position(rotationUnits::deg);
 }
 void alignToGoal(float cm) {
-  currentAlignedGoalcm = cm;
-  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE - currentAlignedGoalcm + (arm_height_press_count * CUP_CM *DEGREE_TO_CM);
-  float catchDegrees = getDegrees();
-  float error = target_degrees - catchDegrees;
-  Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, false);
+  float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE + (arm_height_press_count * CUP_CM * DEGREE_TO_CM);
+  Arm.spinToPosition(target_degrees, vex::rotationUnits::deg, false);
   
     
   /*
@@ -194,11 +189,11 @@ int main() {
     //test. 90 derece == 33cm (-8 cm)
     // Set braking modes
     vexcodeInit();
+    Arm.resetPosition();
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
     Claw.set(false);
-    currentAlignedGoalcm = 0;
     configureBindings();
     
     
