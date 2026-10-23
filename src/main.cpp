@@ -125,7 +125,7 @@ void alignToGoal(float cm) {
   float target_degrees = cm * DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE - currentAlignedGoalcm + (arm_height_press_count * CUP_CM *DEGREE_TO_CM);
   float catchDegrees = getDegrees();
   float error = target_degrees - catchDegrees;
-  Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, true);
+  Arm.spinFor(vex::directionType::fwd, error, vex::rotationUnits::deg, false);
   
     
   /*
@@ -193,6 +193,7 @@ int main() {
     //pin+cup 25cm
     //test. 90 derece == 33cm (-8 cm)
     // Set braking modes
+    vexcodeInit();
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Arm.setStopping(hold);
