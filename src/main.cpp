@@ -46,6 +46,7 @@ void vexcodeInit() {
 
   //Initializing random seed.
   initializeRandomSeed(); 
+  isSlowMode = false;
 }
 
 
@@ -197,7 +198,6 @@ int main() {
     Arm.setStopping(hold);
     Claw.set(false);
     currentAlignedGoalcm = 0;
-    isSlowMode = false;
     configureBindings();
     
     
