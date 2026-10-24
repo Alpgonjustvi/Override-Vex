@@ -6,7 +6,6 @@
 #include <math.h>
 #include <string.h>
 
-
 #include "vex.h"
 
 using namespace vex;
@@ -14,21 +13,20 @@ using namespace vex;
 // Brain should be defined by default
 brain Brain;
 
-
 // START V5 MACROS
-#define waitUntil(condition)                                                   \
-  do {                                                                         \
-    wait(5, msec);                                                             \
+#define waitUntil(condition) \
+  do                         \
+  {                          \
+    wait(5, msec);           \
   } while (!(condition))
 
-#define repeat(iterations)                                                     \
+#define repeat(iterations) \
   for (int iterator = 0; iterator < iterations; iterator++)
 // END V5 MACROS
 
-
-
 // generating and setting random seed
-void initializeRandomSeed(){
+void initializeRandomSeed()
+{
   int systemTime = Brain.Timer.systemHighResolution();
   double batteryCurrent = Brain.Battery.current();
   double batteryVoltage = Brain.Battery.voltage(voltageUnits::mV);
@@ -40,23 +38,19 @@ void initializeRandomSeed(){
   srand(seed);
 }
 
-
-
-void vexcodeInit() {
-
-  //Initializing random seed.
-  initializeRandomSeed(); 
+void vexcodeInit()
+{
+  // Initializing random seed.
+  initializeRandomSeed();
 }
-
 
 // Helper to make playing sounds from the V5 in VEXcode easier and
 // keeps the code cleaner by making it clear what is happening.
-void playVexcodeSound(const char *soundName) {
+void playVexcodeSound(const char *soundName)
+{
   printf("VEXPlaySound:%s\n", soundName);
   wait(5, msec);
 }
-
-
 
 // define variable for remote controller enable/disable
 bool RemoteControlCodeEnabled = true;
@@ -71,8 +65,8 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
-motor ArmMotor1 = motor(PORT12, ratio36_1, true);
-motor ArmMotor2 = motor(PORT14, ratio36_1, false);
+motor ArmMotor1 = motor(PORT10, ratio36_1, true);
+//motor ArmMotor2 = motor(PORT14, ratio36_1, false);
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -85,77 +79,103 @@ motor BottomRight = motor(PORT3, ratio18_1, true);
 motor_group LeftDrive = motor_group(TopLeft, BottomLeft);
 motor_group RightDrive = motor_group(TopRight, BottomRight);
 
+motor_group Arm = motor_group(ArmMotor1);//, ArmMotor2);
 
 // Pneumatic
 digital_out Claw = digital_out(Brain.ThreeWirePort.A);
 
-//CONSTS
+// =========================
+// CONSTS
+// =========================
 
-float MINI_GOAL_CM=8.25;
-float MIDDLE_GOAL_CM=14.65;
-float LARGE_GOAL_CM=22.27;
+const float PIN_CM = 6.5;
+const float TOLERANCE = 1.0;
+const float CUP_CM = 6.48;
 
-float PIN_CM=6.5;
-float TOLERANCE= 1.0;
-float ARMHEIGHTTOLERANCE = -8.0;
-float CUP_CM=6.48;
+const float MINI_GOAL_CM = 8.25;
+const float MIDDLE_GOAL_CM = 14.65;
+const float LARGE_GOAL_CM = 22.27;
 
-float DEGREE_TO_CM= 120.0/25.0;
+const float ARCADE_SLOW_SUPPLIER = 0.28;
+const float MINARMREALHEIGHT = 8.0;
 
-float current_arm_height = 0;
+const float DEG_PER_CM = 90.0 / 16.0;
+
+const int MAX_ARM_STEP = 6;
+const float MAX_ARM_DEG = 600.0;
+const float ARM_VELOCITY = 80.0; // percent
+
+float arcade_supplier = 1.0;
+
+float current_goal_cm = 0;
 int arm_height_press_count = 0;
 
-bool CLAWISEXTENDED = false;
-
+bool ISCLAWEXTENDED = false;
 bool isSlowMode = false;
 
-motor_group Arm = motor_group(
-    ArmMotor1,
-    ArmMotor2
-);
+// =========================
+// FUNCS
+// =========================
 
-//func 
-float getDegrees() {
+float getDegrees()
+{
   return Arm.position(rotationUnits::deg);
 }
-void alignToGoal(float cm) {
-  float target_cm = DEGREE_TO_CM + TOLERANCE + ARMHEIGHTTOLERANCE + (PIN_CM / 2) + (arm_height_press_count * CUP_CM);
-  float target_degrees = target_cm * DEGREE_TO_CM
-  Arm.spinToPosition(target_degrees, vex::rotationUnits::deg, false);
-  
-    
+
+// TOLERANCE - MINARMREALHEIGHT + goal + pin/2 + cup*stepSayisi
+void alignToGoal()
+{
+  if (current_goal_cm <= 0)
+    return;
+
+  float target_cm = TOLERANCE - MINARMREALHEIGHT + current_goal_cm + (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
+  float target_degrees = target_cm * DEG_PER_CM;
+  // Limitle
   /*
-  if (catchDegrees < target_degrees) {
-    Arm.spinFor(vex::directionType::fwd, target_degrees - catchDegrees, vex::rotationUnits::deg, false);
-  } else if (catchDegrees > target_degrees) {
-    Arm.spinFor(vex::directionType::rev, catchDegrees - target_degrees, vex::rotationUnits::deg, false);
-  } else if (catchDegrees == target_degrees) {
-    return;
-  }
-    daha gereksiz hali*/
+  if (target_degrees < 0)
+    target_degrees = 0;
+  if (target_degrees > MAX_ARM_DEG)
+    target_degrees = MAX_ARM_DEG;
+*/
+  Controller1.Screen.clearScreen();
+  wait(50, msec); 
+  Controller1.Screen.setCursor(1, 1);
+  Controller1.Screen.print("T: %.3fcm %.3fdeg", target_cm + MINARMREALHEIGHT, target_degrees);
+
+  Arm.spinToPosition(target_degrees, rotationUnits::deg, false); // spinFor
 }
-void increaseArmStep() {
-  //UYARI, KAC STEP ARTABİLECEĞİ BELLİ DEĞİL, OGRENDİKTEN SONRA LİMİTLEMEK LAZIM.
+
+void increaseArmStep()
+{
+  if (current_goal_cm <= 0)
+    return; // Önce goal seç
+  if (arm_height_press_count >= MAX_ARM_STEP)
+    return;
   arm_height_press_count++;
-  Arm.spinFor(vex::directionType::fwd, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
+  alignToGoal();
 }
-void decreaseArmStep() {
-  if (arm_height_press_count > 0) {
-    arm_height_press_count--; 
-    Arm.spinFor(vex::directionType::rev, CUP_CM * DEGREE_TO_CM, vex::rotationUnits::deg, false);
-} else {
+
+void decreaseArmStep()
+{
+  if (current_goal_cm <= 0)
     return;
-  }
+  arm_height_press_count--;
+  alignToGoal();
 }
-void resetArm() {
-  float catchDegrees = getDegrees();
-  Arm.spinFor(vex::directionType::rev, catchDegrees, vex::rotationUnits::deg, false);
+
+void resetArm()
+{
   arm_height_press_count = 0;
+  current_goal_cm = 0;
+  Arm.spinToPosition(0, rotationUnits::deg, false);
 }
-void toggleClaw() {
-  CLAWISEXTENDED = !CLAWISEXTENDED;
-  Claw.set(CLAWISEXTENDED);
+
+void toggleClaw()
+{
+  ISCLAWEXTENDED = !ISCLAWEXTENDED;
+  Claw.set(ISCLAWEXTENDED);
 }
+
 void toggleSlowMode() {
     isSlowMode = !isSlowMode;
 }
