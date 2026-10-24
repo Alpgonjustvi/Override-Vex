@@ -65,8 +65,8 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
-motor ArmMotor1 = motor(PORT12, ratio36_1, true);
-motor ArmMotor2 = motor(PORT14, ratio36_1, false);
+motor ArmMotor1 = motor(PORT10, ratio36_1, true);
+//motor ArmMotor2 = motor(PORT14, ratio36_1, false);
 
 // Drivetrain motors
 motor TopLeft = motor(PORT1, ratio18_1, false);
@@ -79,7 +79,7 @@ motor BottomRight = motor(PORT3, ratio18_1, true);
 motor_group LeftDrive = motor_group(TopLeft, BottomLeft);
 motor_group RightDrive = motor_group(TopRight, BottomRight);
 
-motor_group Arm = motor_group(ArmMotor1, ArmMotor2);
+motor_group Arm = motor_group(ArmMotor1);//, ArmMotor2);
 
 // Pneumatic
 digital_out Claw = digital_out(Brain.ThreeWirePort.A);
@@ -130,7 +130,6 @@ void alignToGoal()
 
   float target_cm = TOLERANCE - MINARMREALHEIGHT + current_goal_cm + (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
   float target_degrees = target_cm * DEG_PER_CM;
-
   // Limitle
   /*
   if (target_degrees < 0)
@@ -139,7 +138,9 @@ void alignToGoal()
     target_degrees = MAX_ARM_DEG;
 */
   Controller1.Screen.clearScreen();
-  Controller1.Screen.print("Target: %.2f cm, %.2f deg", target_cm + MINARMREALHEIGHT, target_degrees);
+  wait(50, msec); 
+  Controller1.Screen.setCursor(1, 1);
+  Controller1.Screen.print("T: %.3fcm %.3fdeg", target_cm + MINARMREALHEIGHT, target_degrees);
 
   Arm.spinToPosition(target_degrees, rotationUnits::deg, false); // spinFor
 }
