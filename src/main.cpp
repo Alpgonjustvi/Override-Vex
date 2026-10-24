@@ -65,7 +65,7 @@ using namespace vex;
 controller Controller1 = controller(primary);
 
 // Arm motors AYARLA!!!
-motor ArmMotor1 = motor(PORT10, ratio36_1, true);
+motor ArmMotor1 = motor(PORT8, ratio36_1, true);
 //motor ArmMotor2 = motor(PORT14, ratio36_1, false);
 
 // Drivetrain motors
@@ -166,8 +166,8 @@ void decreaseArmStep()
 void resetArm()
 {
   arm_height_press_count = 0;
-  current_goal_cm = 0;
-  Arm.spinToPosition(0, rotationUnits::deg, false);
+  
+  alignToGoal();
 }
 
 void toggleClaw()
@@ -180,19 +180,21 @@ void toggleSlowMode() {
     isSlowMode = !isSlowMode;
 }
 
-void configureBindings() {
-  Controller1.ButtonB.pressed(
-[]() {
-    alignToGoal(MINI_GOAL_CM);
-  });
-  Controller1.ButtonA.pressed(
-[]() {
-    alignToGoal(MIDDLE_GOAL_CM);
-  });
-  Controller1.ButtonX.pressed(
-[]() {
-    alignToGoal(LARGE_GOAL_CM);
-  });
+void selectGoal(float goal_cm)
+{
+  current_goal_cm = goal_cm;
+  alignToGoal();
+}
+
+void configureBindings()
+{
+  Controller1.ButtonB.pressed([]()
+                              { selectGoal(MINI_GOAL_CM); });
+  Controller1.ButtonA.pressed([]()
+                              { selectGoal(MIDDLE_GOAL_CM); });
+  Controller1.ButtonX.pressed([]()
+                              { selectGoal(LARGE_GOAL_CM); });
+
   Controller1.ButtonY.pressed(toggleSlowMode);
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
