@@ -176,27 +176,23 @@ void toggleClaw()
   Claw.set(ISCLAWEXTENDED);
 }
 
-void toggleSlowMode()
-{
-  isSlowMode = !isSlowMode;
-  arcade_supplier = isSlowMode ? ARCADE_SLOW_SUPPLIER : 1.0;
+void toggleSlowMode() {
+    isSlowMode = !isSlowMode;
 }
 
-void selectGoal(float goal_cm)
-{
-  current_goal_cm = goal_cm;
-  alignToGoal();
-}
-
-void configureBindings()
-{
-  Controller1.ButtonB.pressed([]()
-                              { selectGoal(MINI_GOAL_CM); });
-  Controller1.ButtonA.pressed([]()
-                              { selectGoal(MIDDLE_GOAL_CM); });
-  Controller1.ButtonX.pressed([]()
-                              { selectGoal(LARGE_GOAL_CM); });
-
+void configureBindings() {
+  Controller1.ButtonB.pressed(
+[]() {
+    alignToGoal(MINI_GOAL_CM);
+  });
+  Controller1.ButtonA.pressed(
+[]() {
+    alignToGoal(MIDDLE_GOAL_CM);
+  });
+  Controller1.ButtonX.pressed(
+[]() {
+    alignToGoal(LARGE_GOAL_CM);
+  });
   Controller1.ButtonY.pressed(toggleSlowMode);
   Controller1.ButtonL2.pressed(decreaseArmStep);
   Controller1.ButtonL1.pressed(increaseArmStep);
@@ -204,52 +200,63 @@ void configureBindings()
   Controller1.ButtonR2.pressed(toggleClaw);
 }
 
-int main()
-{
-  vexcodeInit();
+int main() {
+    // Initialize robot
+    //pin+cup 25cm
+    //test. 90 derece == 33cm (-8 cm)
+    // Set braking modes
+    vexcodeInit();
+    Arm.resetPosition();
+    LeftDrive.setStopping(brake);
+    RightDrive.setStopping(brake);
+    Arm.setStopping(hold);
+    Claw.set(false);
+    configureBindings();
+    
+    
 
-  // Braking modes
-  LeftDrive.setStopping(brake);
-  RightDrive.setStopping(brake);
-  Arm.setStopping(hold);
-  Arm.setVelocity(ARM_VELOCITY, percent);
 
-  // Maç Başında en altta başlamalı
-  Arm.setPosition(0, rotationUnits::deg);
+    while (true) {
 
-  Claw.set(false);
-  configureBindings();
+        // =========================
+        // ARCADE DRIVETRAIN
+        // =========================
 
-  while (true)
-  {
-    // =========================
-    // ARCADE DRIVETRAIN
-    // =========================
-    int driveSpeed = -Controller1.Axis3.position(percent);
-    int turnSpeed = -Controller1.Axis1.position(percent);
+        // Left joystick: forward/backward (inverted)
+        int driveSpeed = -Controller1.Axis3.position(percent);
 
-    // Deadband
-    if (abs(driveSpeed) < 5)
-      driveSpeed = 0;
-    if (abs(turnSpeed) < 5)
-      turnSpeed = 0;
+        // Right joystick: turning (inverted)
+        int turnSpeed = -Controller1.Axis1.position(percent);
 
-    int leftSpeed = driveSpeed + turnSpeed;
-    int rightSpeed = driveSpeed - turnSpeed;
+        // Deadband
+        if (abs(driveSpeed) < 5) driveSpeed = 0;
+        if (abs(turnSpeed) < 5) turnSpeed = 0;
 
-    // Clamp
-    if (leftSpeed > 100)
-      leftSpeed = 100;
-    if (leftSpeed < -100)
-      leftSpeed = -100;
-    if (rightSpeed > 100)
-      rightSpeed = 100;
-    if (rightSpeed < -100)
-      rightSpeed = -100;
+        // Calculate motor speeds
+        int leftSpeed = driveSpeed + turnSpeed;
+        int rightSpeed = driveSpeed - turnSpeed;
 
-    LeftDrive.spin(vex::forward, leftSpeed * arcade_supplier, percent);
-    RightDrive.spin(vex::forward, rightSpeed * arcade_supplier, percent);
+        // Clamp speeds to -100% to 100%
+        if (leftSpeed > 100) leftSpeed = 100;
+        if (leftSpeed < -100) leftSpeed = -100;
 
-    wait(20, msec);
-  }
+        if (rightSpeed > 100) rightSpeed = 100;
+        if (rightSpeed < -100) rightSpeed = -100;
+
+        // Apply slow mode scale (40% speed)
+        if (isSlowMode) {
+            leftSpeed *= 0.28;
+            rightSpeed *= 0.28;
+        }
+
+        // Move drivetrain
+        LeftDrive.spin(vex::forward, leftSpeed, percent);
+        RightDrive.spin(vex::forward, rightSpeed, percent);
+
+        
+        
+
+        // Small delay
+        wait(20, msec);
+    }
 }
