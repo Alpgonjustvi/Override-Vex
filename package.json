@@ -1,0 +1,17 @@
+{
+    "name": "terminal-plotter",
+    "displayName": "Terminal Plotter",
+    "description": "Terminal çıktısındaki >>key:value,key:value; satırlarını zamana bağlı çizgi grafiğe çevirir.",
+    "version": "0.0.1",
+    "publisher": "local",
+    "engines": { "vscode": "^1.93.0" },
+    "categories": ["Visualization", "Other"],
+    "main": "./extension.js",
+    "contributes": {
+      "commands": [
+        { "command": "terminalPlotter.start", "title": "Terminal Plotter: Terminal Seç ve İzlemeyi Başlat" },
+        { "command": "terminalPlotter.stop", "title": "Terminal Plotter: İzlemeyi Durdur" },
+        { "command": "terminalPlotter.clear", "title": "Terminal Plotter: Grafiği Temizle" }
+      ]
+    }
+  }
