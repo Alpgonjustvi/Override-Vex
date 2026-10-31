@@ -1,11 +1,7 @@
 #include "main.h"
-
-/////
-// For installation, upgrading, documentations, and tutorials, check out our website!
 // https://ez-robotics.github.io/EZ-Template/
-/////
 
-// Chassis constructor
+// Chassis
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
     {1, 4},     // Left Chassis Ports (negative port will reverse it!)
@@ -14,14 +10,68 @@ ez::Drive chassis(
     //chais pas,      // IMU Port
     3.25,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     343);   // Wheel RPM = cartridge * (motor gear / wheel gear)
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+
+
+//Motor Grupları
+pros::MotorGroup Arm({11, -12}, pros::MotorGearset::green);
+
+
+
+
+//Değerler (doldurmak lazım)
+const double CUPCM = 6.48;
+const double PINCM = 6.5;
+const float TOLERANCE = 1;
+const float MINARMREALHEIGHT = 8.0;
+
+const float MINI_GOAL_CM = 8.25;
+const float MIDDLE_GOAL_CM = 14.65;
+const float LARGE_GOAL_CM = 22.27;
+
+double current_goal_cm = 0;
+
+const float DEG_PER_CM = 90.0 / 16.0; //kontrol etmek lazım
+
+int arm_height_press_count = 0;
+double target_position;
+double target_degree = target_position * DEG_PER_CM;
+double current_position;
+
+void resetArm() {
+  Arm.move_absolute(0, 100);
+  arm_height_press_count = 0;
+}
+
+void increaseStep() {
+  arm_height_press_count += 1;
+  target_position += DEG_PER_CM * CUPCM;
+  Arm.move_absolute(target_position, 100);
+}
+
+void decreaseStep() {
+  if (arm_height_press_count > 0) {
+  arm_height_press_count -= 1;
+  target_position -=CUPCM;
+  Arm.move_absolute(target_degree, 100);
+  } else {
+    return;
+  };
+}
+
+void alignToGoal() {
+  if (current_goal_cm <= 0)
+    return;
+  target_position = TOLERANCE - MINARMREALHEIGHT + current_goal_cm + (PINCM /2.0) + (CUPCM * arm_height_press_count);
+  Arm.move_absolute(target_degree, 100);
+}
+
+void selectGoal(float goal_cm) {
+  current_goal_cm = goal_cm;
+  alignToGoal();
+}
+
 void initialize() {
-  // Print our branding over your terminal :D
+
   ez::ez_template_print();
 
   pros::delay(500);  // Stop the user from doing anything while legacy ports configure
@@ -31,6 +81,9 @@ void initialize() {
   chassis.opcontrol_drive_activebrake_set(0.0);   // Sets the active brake kP. We recommend ~2.  0 will disable.
   chassis.opcontrol_curve_default_set(0.0, 0.0);  // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
 
+
+  Arm.tare_position();
+  Arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   // Set the drive to your own constants from autons.cpp!
   default_constants();
 
@@ -208,6 +261,26 @@ void ez_template_extras() {
   }
 }
 
+void configureBindings() {
+      if (master.get_digital_new_press(DIGITAL_L1)) {
+    increaseStep();
+    }
+      if (master.get_digital_new_press(DIGITAL_L2)) {
+    decreaseStep();
+    }
+      if (master.get_digital_new_press(DIGITAL_R1)) {
+    resetArm();
+    }
+      if (master.get_digital_new_press(DIGITAL_B)) {
+    selectGoal(MINI_GOAL_CM);
+    }
+      if (master.get_digital_new_press(DIGITAL_A)) {
+    selectGoal(MIDDLE_GOAL_CM);
+    } 
+     if (master.get_digital_new_press(DIGITAL_X)) {
+    selectGoal(LARGE_GOAL_CM);
+}
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -234,10 +307,7 @@ void opcontrol() {
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
-
-    // . . .
-    // Put more user control code here!
-    // . . .
+    configureBindings();
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
