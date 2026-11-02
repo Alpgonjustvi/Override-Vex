@@ -288,7 +288,7 @@ void joystick_aggressive_pid() {
     double pid_output = (kP * error) + (kI * integral) + (kD * derivative);
 
     // 3. Serial Plotter Protokolüne Uygun Çıktı (> işareti ve \r\n kullanımı)
-    std::cout << ">target:" << target << ",real:" << real_output << ",error:" << error << "\r\n";
+    std::cout << ">>target:" << target << ",real:" << real_output << ",error:" << error << ";\r\n";
 
     // 4. Kumanda Ekranına Bilgi Yazdırma
     master.print(0, 0, "T:%.0f R:%.0f E:%.0f   ", target, real_output, error);
