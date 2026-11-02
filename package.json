@@ -39,5 +39,8 @@
         "title": "Terminal Plotter: Grafiği Temizle"
       }
     ]
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.1.0"
   }
 }
