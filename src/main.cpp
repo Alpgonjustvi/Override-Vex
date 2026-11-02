@@ -264,7 +264,7 @@ void joystick_aggressive_pid() {
     double real_output = chassis.left_motors[0].get_actual_velocity(); 
 
     // Hedef ve Gerçek değer
-    double target = joystick_input; 
+    double target = joystick_input * (240/127.0);  // Joystick değerini motor RPM'ye dönüştür (600 RPM max)
     
     // PID Parametreleri (Agresif tepki için)
     double kP = 1.4;  
@@ -287,9 +287,8 @@ void joystick_aggressive_pid() {
     // PID Çıkışı
     double pid_output = (kP * error) + (kI * integral) + (kD * derivative);
 
-    // 3. Serial Plotter Eklentisi İçin JSON Formatında Çıktı
-    // Badlogicgames serial plotter, JSON formatındaki verileri otomatik olarak algılar ve çizer.
-    printf("{\"target\": %.2f, \"real\": %.2f, \"error\": %.2f}\n", target, real_output, error);
+    // 3. Serial Plotter Protokolüne Uygun Çıktı (> işareti ve \r\n kullanımı)
+    std::cout << ">target:" << target << ",real:" << real_output << ",error:" << error << "\r\n";
 
     // 4. Kumanda Ekranına Bilgi Yazdırma
     master.print(0, 0, "T:%.0f R:%.0f E:%.0f   ", target, real_output, error);
