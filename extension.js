@@ -2,21 +2,18 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
-// ANSI / OSC (shell integration dahil) kaçış dizilerini temizler
 const ANSI_RE = /\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b\[[0-?]*[ -/]*[@-~]|\x1b[@-Z\\-_]/g;
-// Sadece reel sayılar
 const NUM_RE = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/;
 
 let panel;
-let selected;          // izlenen terminal
-let buffer = '';       // parçalı gelen çıktı için
+let selected;         
+let buffer = '';      
 let statusItem;
 
-// ">>a:1,b:2.5" gövdesini {a:1, b:2.5} nesnesine çevirir. Sayı olmayan değerler atlanır.
 function parseBody(body) {
   const values = {};
   for (const part of body.split(',')) {
-    const i = part.lastIndexOf(':');   // key içinde "::" olsa bile çalışsın
+    const i = part.lastIndexOf(':');
     if (i <= 0) continue;
     const key = part.slice(0, i).trim();
     const raw = part.slice(i + 1).trim();
@@ -25,20 +22,26 @@ function parseBody(body) {
   return values;
 }
 
-// Terminalden gelen ham veri parçasını işler.
 function feed(chunk) {
+  console.log("[AGPLOT] [Plotter DEBUG] Hammadde Gelen Chunk:", JSON.stringify(chunk));
+
   buffer += chunk.replace(ANSI_RE, '').replace(/\r/g, '');
+  
+  console.log("[AGPLOT] [Plotter DEBUG] Temizlenen Buffer:", JSON.stringify(buffer));
+
   const re = />>([^;\n]*);/g;
   let m, last = 0;
   while ((m = re.exec(buffer))) {
     last = re.lastIndex;
     const values = parseBody(m[1]);
+    console.log("[AGPLOT] [Plotter DEBUG] Parse Edilen Değerler:", values);
+
     if (Object.keys(values).length && panel) {
       panel.webview.postMessage({ type: 'sample', t: Date.now(), values });
+      console.log("[AGPLOT] [Plotter DEBUG] Webview'e veri gönderildi!");
     }
   }
   buffer = buffer.slice(last);
-  // Henüz ';' gelmemiş yarım satırı koru, gerisini at
   const i = buffer.lastIndexOf('>>');
   buffer = i >= 0 ? buffer.slice(i) : buffer.slice(-1);
   if (buffer.length > 4096) buffer = '';
@@ -56,22 +59,19 @@ function ensurePanel(context) {
 }
 
 async function start(context) {
-  if (!vscode.window.onDidStartTerminalShellExecution) {
-    vscode.window.showErrorMessage('Bu eklenti VS Code 1.93+ (Shell Integration API) gerektirir.');
-    return;
-  }
   const terms = vscode.window.terminals;
   if (!terms.length) {
     vscode.window.showInformationMessage('Açık terminal yok. Önce bir terminal aç.');
     return;
   }
+  
   const pick = await vscode.window.showQuickPick(
     terms.map(t => ({
       label: t.name,
-      description: t.shellIntegration ? 'shell integration ✓' : 'shell integration henüz aktif değil',
+      description: 'Aktif terminal',
       terminal: t
     })),
-    { placeHolder: 'İzlenecek terminali seç' }
+    { placeHolder: 'İzlenecek terminali seç (VEX PROS dahil)' }
   );
   if (!pick) return;
 
@@ -80,8 +80,9 @@ async function start(context) {
   ensurePanel(context);
   statusItem.text = `$(graph) Plotter: ${selected.name}`;
   statusItem.show();
+  console.log("[AGPLOT] [Plotter DEBUG] İzleme başlatıldı, seçilen terminal:", selected.name);
   vscode.window.showInformationMessage(
-    `"${selected.name}" izleniyor. Programı bu noktadan SONRA çalıştır (çalışan komuta bağlanılamaz).`
+    `"${selected.name}" izleniyor. Verileri göndermeye başlayabilirsiniz.`
   );
 }
 
@@ -89,6 +90,7 @@ function stop() {
   selected = undefined;
   buffer = '';
   statusItem.hide();
+  console.log("[AGPLOT] [Plotter DEBUG] İzleme durduruldu.");
 }
 
 function activate(context) {
@@ -101,22 +103,16 @@ function activate(context) {
     vscode.commands.registerCommand('terminalPlotter.start', () => start(context)),
     vscode.commands.registerCommand('terminalPlotter.stop', stop),
     vscode.commands.registerCommand('terminalPlotter.clear', () => panel?.webview.postMessage({ type: 'clear' })),
-    vscode.window.onDidCloseTerminal(t => { if (t === selected) stop(); })
-  );
-
-  if (vscode.window.onDidStartTerminalShellExecution) {
-    context.subscriptions.push(
-      vscode.window.onDidStartTerminalShellExecution(async e => {
-        if (e.terminal !== selected) return;
-        buffer = '';
-        try {
-          for await (const data of e.execution.read()) feed(data);
-        } catch (err) {
-          console.error('Terminal Plotter read error', err);
+    vscode.window.onDidCloseTerminal(t => { if (t === selected) stop(); }),
+    
+    vscode.window.onDidWriteTerminalData(e => {
+        console.log(`[AGPLOT] [GENEL TERMINAL VERISI] (${e.terminal.name}):`, JSON.stringify(e.data));
+        if (e.terminal === selected) {
+            feed(e.data);
         }
-      })
-    );
-  }
+    })
+  );
+  console.log("[AGPLOT] [Plotter DEBUG] Eklenti aktifleşti.");
 }
 
 function deactivate() {}

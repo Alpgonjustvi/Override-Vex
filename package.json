@@ -20,6 +20,9 @@
     "onCommand:terminalPlotter.stop",
     "onCommand:terminalPlotter.clear"
   ],
+  "enabledApiProposals": [
+    "terminalDataWriteEvent"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Alpgonjustvi/Override-Vex.git"
