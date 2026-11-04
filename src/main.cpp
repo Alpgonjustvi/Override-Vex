@@ -15,7 +15,9 @@ ez::Drive chassis(
 //Motor Grupları
 pros::MotorGroup Arm({11, -12}, pros::MotorGearset::green);
 
-
+//Pneumaticler
+ez::Piston Claw('A'); 
+ez::Piston Toggle('B');
 
 
 //Değerler (doldurmak lazım)
@@ -308,6 +310,8 @@ void opcontrol() {
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
     configureBindings();
+
+    Claw.button_toggle(master.get_digital(DIGITAL_R2)); //değiştirilebilir?
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
