@@ -12,6 +12,10 @@
     "Other"
   ],
   "main": "./extension.js",
+  "files": [
+    "extension.js",
+    "src/**/*"
+  ],
   "scripts": {
     "deploy": "vsce package --out ./VSIX/"
   },

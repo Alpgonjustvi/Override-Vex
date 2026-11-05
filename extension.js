@@ -106,8 +106,9 @@ function activate(context) {
     vscode.window.onDidCloseTerminal(t => { if (t === selected) stop(); }),
     
     vscode.window.onDidWriteTerminalData(e => {
-        console.log(`[AGPLOT] [GENEL TERMINAL VERISI] (${e.terminal.name}):`, JSON.stringify(e.data));
+        console.log(`[AGPLOT] [GENEL TERMINAL VERISI] (${e.terminal.name}):`, JSON.stringify(e.data), `SELECTED: ${selected.name}`);
         if (e.terminal === selected) {
+          console.log(`[AGPLOT] [GENEL TERMINAL VERISI] GÜZEL`);
             feed(e.data);
         }
     })

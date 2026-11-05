@@ -1,3 +1,3 @@
 setInterval(() => {
-    console.log(">>Alp:1, asd:3;")
-}, 100)
+    console.log(">>asd:1,alp:3;");
+}, 100);
