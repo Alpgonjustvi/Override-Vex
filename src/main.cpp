@@ -8,13 +8,13 @@
 // Chassis constructor
 ez::Drive chassis({-1, -4},  // Left Chassis Ports (negative port will reverse it!)
                   {2, 3},    // Right Chassis Ports (negative port will reverse it!)
-                  7,         // IMU Port
+                  16,         // IMU Port
                   4.125,     // Wheel Diameter
                   343        // Wheel RPM
 );
 
 // Motor Grupları (Sağ/Sol yön ayarları)
-pros::MotorGroup Arm({-10, 6, 11, -13}, pros::MotorGearset::green);
+pros::MotorGroup Arm({-10, 6, 11, -13}, pros::MotorGearset::green, pros::MotorUnits::degrees);
 
 // Pnömatikler
 ez::Piston Claw('A');
@@ -26,30 +26,34 @@ int arm_height_press_count = 0;
 double target_position;  // cm
 double current_position;
 
-const float PIN_CM = 6.5;
-const float TOLERANCE = 1.0;
-const float CUP_CM = 6.48;
+const float PIN_CM = 16.5;
+const float TOLERANCE = 0.0;
+const float CUP_CM = 16.45;
 
 const float MINI_GOAL_CM = 8.25;
 const float MIDDLE_GOAL_CM = 14.65;
 const float LARGE_GOAL_CM = 22.27;
 
-const float REALARMHEIGHTFROMFLOOR = 8.0;
-const float DEG_PER_CM = 140.0 / 32.5;
+const float REALARMHEIGHTFROMFLOOR = 19.5;
+const float DEG_PER_CM = 48.0 / 30.0;  // 48 derece / 30 cm
 
 const int MAX_ARM_STEP = 6;
-const float ARM_VELOCITY = 127;
+const float ARM_VELOCITY = 150.0;
 
-double current_goal_cm = MINI_GOAL_CM;  // Başlangıçta güvenli bir hedef atandı
+double current_goal_cm = MINI_GOAL_CM;
 
-// Kol Hedef Hesaplama ve Harekete Geçirme Fonksiyonu
+
+//33,5; 37
+
 void alignToGoal() {
   if (current_goal_cm <= 0) return;
 
-  float target_cm = TOLERANCE - REALARMHEIGHTFROMFLOOR + current_goal_cm + (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
-  float target_degrees = target_cm * DEG_PER_CM;
+  float target_cm = TOLERANCE - REALARMHEIGHTFROMFLOOR + current_goal_cm +
+                    (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
+  if (target_cm < 1.0f) target_cm = 1.0f;
 
-  Arm.move_absolute(target_degrees, ARM_VELOCITY);
+  float arm_target_deg = target_cm * DEG_PER_CM;
+  Arm.move_relative(arm_target_deg, ARM_VELOCITY);
 }
 
 void increaseStep() {
@@ -61,7 +65,7 @@ void increaseStep() {
 
 void decreaseStep() {
   if (current_goal_cm <= 0) return;
-  if (arm_height_press_count <= 0) return;  // Negatif adıma düşmeyi engeller
+  if (arm_height_press_count <= 0) return;
   arm_height_press_count--;
   alignToGoal();
 }
@@ -77,8 +81,8 @@ void initialize() {
   pros::delay(500);
 
   // Kol motorlarının fren modunu hold yapıp pozisyonu sıfırlıyoruz
-  Arm.set_brake_mode(pros::MotorBrake::hold);
-  Arm.tare_position();
+  Arm.set_encoder_units_all(pros::MotorUnits::degrees);
+  Arm.set_brake_mode_all(pros::MotorBrake::hold);
 
   chassis.opcontrol_drive_activebrake_set(0.0);
   chassis.opcontrol_curve_default_set(0.0, 0.0);
@@ -190,7 +194,7 @@ void configureBindings() {
   if (master.get_digital_new_press(DIGITAL_L2)) {
     decreaseStep();
   }
-  /*
+  
   // Hedef Boyut Seçimi (B, A, X tuşları)
   if (master.get_digital_new_press(DIGITAL_B)) {
       selectGoal(MINI_GOAL_CM);
@@ -201,30 +205,40 @@ void configureBindings() {
   if (master.get_digital_new_press(DIGITAL_X)) {
       selectGoal(LARGE_GOAL_CM);
   }
-      */
+    
 }
 
 void opcontrol() {
-  chassis.drive_brake_set(MOTOR_BRAKE_BRAKE);
-  Arm.set_brake_mode(pros::MotorBrake::hold);
+  Arm.set_encoder_units_all(pros::MotorUnits::degrees);
+  Arm.set_brake_mode_all(pros::MotorBrake::hold);
+  Arm.tare_position_all();
 
-  // Başlangıçta garanti olsun diye Mini Goal seçili başlatalım
   if (current_goal_cm <= 0) {
     current_goal_cm = MINI_GOAL_CM;
   }
 
+  static int print_counter = 0;
+
+
   while (true) {
     configureBindings();
-    ez_template_extras();
+    // ez_template_extras();  // Disabled during testing to avoid X/B button conflicts
     chassis.opcontrol_arcade_standard(ez::SPLIT);
 
-    // --- CANLI HESAPLAMA VE TERMİNAL LOGLAMA ---
-    float target_cm = TOLERANCE - REALARMHEIGHTFROMFLOOR + current_goal_cm + (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
+    float target_cm = TOLERANCE - REALARMHEIGHTFROMFLOOR + current_goal_cm +
+                      (PIN_CM / 2.0) + (CUP_CM * arm_height_press_count);
     float target_degrees = target_cm * DEG_PER_CM;
-    double current_deg = Arm.get_position();
 
-    // Sadece terminale yazdırıyoruz (LVGL çökmesini önler)
-    printf("AHedef CM: %.1f | Adim: %d | Hedef Deg: %.1f | Mevcut Deg: %.1f\n", current_goal_cm, arm_height_press_count, target_degrees, current_deg);
+    if (print_counter++ % 10 == 0) {
+      printf("Adim: %d | Hedef: %.1f | Pos: %.1f %.1f %.1f %.1f | mA: %d %d %d %d\n",
+             arm_height_press_count, target_degrees,
+             Arm.get_position(0), Arm.get_position(1),
+             Arm.get_position(2), Arm.get_position(3),
+             static_cast<int>(Arm.get_current_draw(0)),
+             static_cast<int>(Arm.get_current_draw(1)),
+             static_cast<int>(Arm.get_current_draw(2)),
+             static_cast<int>(Arm.get_current_draw(3)));
+    }
 
     pros::delay(ez::util::DELAY_TIME);
   }

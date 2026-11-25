@@ -9,13 +9,13 @@
 const int DRIVE_SPEED = 110;
 const int TURN_SPEED = 90;
 const int SWING_SPEED = 110;
-
+// 24 in = 56 cm
 ///
 // Constants
 ///
 void default_constants() {
   // P, I, D, and Start I
-  chassis.pid_drive_constants_set(40.0, 0.0, 11.0);         // fwd/rev constants, used for odom and non odom motions
+  chassis.pid_drive_constants_set(40.0, 0.0, 11.0);          // fwd/rev constants, used for odom and non odom motions
   chassis.pid_heading_constants_set(11.0, 0.0, 20.0);        // Holds the robot straight while going forward without odom
   chassis.pid_turn_constants_set(3.0, 0.05, 20.0, 15.0);     // Turn in place constants
   chassis.pid_swing_constants_set(6.0, 0.0, 65.0);           // Swing constants
@@ -53,18 +53,77 @@ void default_constants() {
 // Drive Example
 ///
 void drive_example() {
-  // The first parameter is target inches
-  // The second parameter is max speed the robot will drive at
-  // The third parameter is a boolean (true or false) for enabling/disabling a slew at the start of drive motions
-  // for slew, only enable it when the drive distance is greater than the slew distance + a few inches
+  // Change 0_deg to 90_deg because moving in +X is 90° in EZ-Template
+  chassis.odom_xyt_set(-66.0_in, 0.0_in, 90_deg);
 
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  // Straight segment 1 (Drives straight forward along +X without turning)
+  chassis.pid_odom_ptp_set({{-54.3_in, 0.0_in}, ez::fwd, 80});
   chassis.pid_wait();
 
-  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  // Action: move
+
+  // Straight segment 2 (Reverse, still facing 0 deg)
+  chassis.pid_odom_ptp_set({{-65.4_in, 0.0_in}, ez::rev, 80});
   chassis.pid_wait();
 
-  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  // Action: move
+
+  // Straight segment 3 (Forward, still facing 0 deg)
+  chassis.pid_odom_ptp_set({{-53.5_in, 0.0_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: move
+
+  // Straight segment 4 (Reverse, still facing 0 deg)
+  chassis.pid_odom_ptp_set({{-64.9_in, 0.0_in}, ez::rev, 80});
+  chassis.pid_wait();
+
+  // Action: move
+
+  // Straight segment 5 (Forward, starting from 0 deg)
+  chassis.pid_odom_ptp_set({{-50.4_in, -15.3_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: release
+
+  // Straight segment 6
+  chassis.pid_odom_ptp_set({{-49.3_in, -6.1_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: move
+
+  // Straight segment 7
+  chassis.pid_odom_ptp_set({{-28.5_in, -17.4_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: clamp
+
+  // Straight segment 8
+  chassis.pid_odom_ptp_set({{-17.8_in, -23.9_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: turn
+
+  // Straight segment 9
+  chassis.pid_odom_ptp_set({{-39.6_in, -25.6_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: clamp
+
+  // Straight segment 10
+  chassis.pid_odom_ptp_set({{-24.5_in, -25.1_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: turn
+
+  // Straight segment 11
+  chassis.pid_odom_ptp_set({{-43.8_in, -43.3_in}, ez::fwd, 80});
+  chassis.pid_wait();
+
+  // Action: clamp
+
+  // Straight segment 12
+  chassis.pid_odom_ptp_set({{-49.7_in, -35.0_in}, ez::fwd, 80});
   chassis.pid_wait();
 }
 
